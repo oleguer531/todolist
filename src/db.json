@@ -1,0 +1,36 @@
+{
+  "categories": [
+    {
+      "id": 1,
+      "hash": "rabota",
+      "title": "Работа",
+      "description": "Задачи по работе"
+    },
+    {
+      "id": 2,
+      "hash": "otpusk",
+      "title": "Отпуск",
+      "description": "Задачи на отпуск"
+    },
+    {
+      "id": 3,
+      "hash": "semya",
+      "title": "Семья",
+      "description": "Проведение времени с семьей"
+    }
+  ],
+  "tasks": [
+    {
+      "task": "Сходить в туалет",
+      "isCompleted": false,
+      "category": "otpusk",
+      "id": 121355
+    },
+    {
+      "task": "Сказать Ивану, что я тупой",
+      "isCompleted": false,
+      "category": "rabota",
+      "id": 12513565
+    }
+  ]
+}

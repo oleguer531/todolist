@@ -1,73 +1,180 @@
 import React from 'react';
 import List from './List';
+import Panel from './Panel';
+import AddTask from './AddTask';
+import Container from "../containers/Default";
+import createHash from "../utils/createHash";
+import Modal from "./Modal";
+import db from "../db.json";
 
-class App extends React.Component{
-    constructor(props){
-        super(props);
-        this.addNew = this.addNew.bind(this);
-        this.deleteList = this.deleteList.bind(this);
-        this.removing = this.removing.bind(this);
-        this.done = this.done.bind(this);
-        this.state = {
-            list: []
-        }
-    }
-    deleteList(){
-        this.setState(state =>({
-            list: []
-        }))
-    }
-    addNew(){
-        const newElement = document
-            .getElementById("newElement").value;
+const renderModalHandler = () => 
+	<button className="button is-primary">Добавить задание</button>
 
-        this.setState(state => ({
-            list: this.state.list.concat([{
-                id: + new Date(),
-                message: newElement,
-                done:false,
-            }])
-        }))
-    }
-    removing(id) {
-        const newList = this.state.list
-            .filter(item => item.id != id);
+class App extends React.Component {
+	constructor(props) {
+		super(props);
+		this.addTask = this.addTask.bind(this);
+		this.deleteList = this.deleteList.bind(this);
+		this.removing = this.removing.bind(this);
+		this.done = this.done.bind(this);
+		this.addCategory = this.addCategory.bind(this);
+		this.editTask = this.editTask.bind(this);
+		this.saveTask = this.saveTask.bind(this);
+		this.state = {
+			list: null,
+			categories: null,
+		}
+	}
 
-        this.setState({
-            list: newList,
-        })
-    }
-    done(id) {
-        const newList = this.state.list
-            .map(item => {
-                if (item.id == id) {
-                    return Object.assign({}, item, {
-                        done: !item.done
-                    });
-                } else {
-                    return item
-                }
-            });
+	componentDidMount() {
+		this.setState({
+			categories: db.categories,
+			list: db.tasks,
+		})
+	}
 
-        this.setState({
-            list: newList,
-        })
-    }
-    render(){
-        return(
-            <div>
-                <h1>Message</h1>
-                <List 
+	deleteList() {
+		this.setState(state => ({
+			list: []
+		}))
+	}
+
+	addTask(newTask) {
+		this.setState(state => ({
+			...state,
+			list: [
+				{
+					...newTask,
+					id: + new Date(),
+					isEditing: false,
+				},
+				...state.list],
+		}))
+	}
+
+	editTask(id) {
+		this.setState({
+			list: this.state.list.map(item => {
+				if (item.id === id) {
+					return {
+						...item,
+						isEditing: !item.isEditing,
+					}
+				} else {
+					return {
+						...item,
+					}
+				}
+			}),
+		})
+	}
+
+	saveTask(id, newContent) {
+		this.setState({
+			list: this.state.list.map(item => {
+				if (item.id === id) {
+					return {
+						...item,
+						task: newContent
+					}
+				} else {
+					return item
+				}
+			}),
+		})
+	}
+
+	removing(id) {
+		this.setState({
+			list: this.state.list.filter(task => task.id !== id),
+		})
+	}
+ 
+	done(id) {
+		this.setState({
+			list: this.state.list.map(item => {
+					if (item.id === id) {
+						return {
+							...item,
+							isCompleted: !item.isCompleted,
+						}
+					} else {
+						return {
+							...item,
+						}
+					}
+				}),
+		})
+	}
+
+	addCategory(newCategory) {
+		this.setState(state => ({
+			...state,
+			categories: [{
+				...newCategory,
+				id: state.categories.length + 1,
+				hash: createHash(newCategory.title),
+			}, ...state.categories]
+		}))
+	}
+
+	render() {
+		console.log(this.state);
+		return (
+			<Container>
+				<div className="columns">
+					<div className="column is-narrow">
+						<div className="box app_panel">
+							<Panel 
+								onAddCategory={this.addCategory} 
+								categories={this.state.categories} 
+							/>
+						</div>
+					</div>
+					<div className="column">
+						<div className="box">
+							<Modal title="Добавление задания" handler={renderModalHandler()}>
+								<AddTask onAddTask={this.addTask} categories={this.state.categories} />
+							</Modal>
+							{this.state.list && 
+								<List
+									tasks={this.state.list.map(task => ({
+										...task,
+										category: this.state.categories.filter(cat => cat.hash === task.category)[0]
+									}))}
+									onEdit={this.editTask}
+									onDone={this.done}
+									onRemove={this.removing}
+									onSave={this.saveTask}
+								/>
+							}
+						</div>
+					</div>
+				</div>
+				{/*   <div className="">
+                <h1 className="title app_todo">Todo list</h1>
+               
+                <div className="">
+                    <div className="app_addForm">
+                <div className="field has-addons has-addons-centered">
+                    <div className="control">
+                        <input className="input is-large app_input" id="newElement" type="text" placeholder="Введите текст" />
+                    </div>
+                    <div className="control">
+                        <button className="button is-success is-large"onClick={this.addTask}>Добавить</button>
+                    </div>
+                    </div>
+                </div>
+                </div>
+                </div>
+                 <List 
                     onRemove={this.removing} 
                     list={this.state.list}
                     onDone={this.done}
-                />
-                <input id="newElement" type="text" placeholder="Введите текст" />
-                <button onClick={this.addNew}>Добавить</button>
-                <button onClick={this.deleteList}>Очистить</button>
-            </div>
-        );
-    }
+        /> */}
+			</Container>
+		);
+	}
 }
-
+//<button onClick={this.deleteList}>Очистить</button>
 export default App;
